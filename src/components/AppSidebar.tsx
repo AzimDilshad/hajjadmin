@@ -3,12 +3,12 @@ import {
   Users,
   Package,
   CreditCard,
-  Settings,
   LogOut,
   Plane,
+  UserCog,
+  Keyboard,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
 import {
@@ -29,12 +29,12 @@ const navItems = [
   { title: "Pilgrims", url: "/pilgrims", icon: Users, permission: "pilgrims.view" },
   { title: "Packages", url: "/packages", icon: Package, permission: null },
   { title: "Payments", url: "/payments", icon: CreditCard, permission: "accounts.view" },
+  { title: "Users", url: "/users", icon: UserCog, permission: "users.manage" },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
-  const location = useLocation();
   const { user, logout, hasPermission } = useAuth();
 
   const filteredItems = navItems.filter(
@@ -87,6 +87,18 @@ export function AppSidebar() {
           </div>
         )}
         <SidebarMenu>
+          {!collapsed && (
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "?" }))}
+                className="text-sidebar-foreground/70 hover:text-sidebar-foreground"
+              >
+                <Keyboard className="mr-2 h-4 w-4" />
+                <span>Shortcuts</span>
+                <kbd className="ml-auto text-[10px] px-1.5 py-0.5 bg-sidebar-accent rounded border border-sidebar-border font-mono">?</kbd>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
           <SidebarMenuItem>
             <SidebarMenuButton onClick={logout} className="hover:bg-destructive/20 text-sidebar-foreground/70 hover:text-destructive">
               <LogOut className="mr-2 h-4 w-4" />
