@@ -1,0 +1,460 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [4 0 R 6 0 R 8 0 R 10 0 R 12 0 R 14 0 R 16 0 R] /Count 7 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
+endobj
+5 0 obj
+<< /Length 1902 >>
+stream
+BT
+/F1 10 Tf
+40 792 Td
+(Goodhope API Documentation) Tj
+0 -14 Td () Tj
+0 -14 Td (Base URL: `http://localhost:4000/api`) Tj
+0 -14 Td () Tj
+0 -14 Td (Overview) Tj
+0 -14 Td (This backend is a lightweight Node.js HTTP server with MongoDB persistence.) Tj
+0 -14 Td (All responses are JSON and include permissive CORS headers.) Tj
+0 -14 Td () Tj
+0 -14 Td (Common Behavior) Tj
+0 -14 Td (- Content type: `application/json`) Tj
+0 -14 Td (- Auth: JWT bearer token for all endpoints except `/health` and `/auth/login`) Tj
+0 -14 Td (- Password storage: bcrypt hashes \(`passwordHash`\)) Tj
+0 -14 Td (- CORS:) Tj
+0 -14 Td (  - `Access-Control-Allow-Origin: *`) Tj
+0 -14 Td (  - `Access-Control-Allow-Methods: GET,POST,PATCH,DELETE,OPTIONS`) Tj
+0 -14 Td (  - `Access-Control-Allow-Headers: Content-Type, Authorization`) Tj
+0 -14 Td (- Invalid JSON payload returns `400` with:) Tj
+0 -14 Td (  - `{ "message": "Invalid JSON payload" }`) Tj
+0 -14 Td (- Unknown routes return `404` with:) Tj
+0 -14 Td (  - `{ "message": "Not found" }`) Tj
+0 -14 Td () Tj
+0 -14 Td (Authentication & Bootstrap) Tj
+0 -14 Td () Tj
+0 -14 Td (All protected calls must include:) Tj
+0 -14 Td () Tj
+0 -14 Td (```) Tj
+0 -14 Td (Authorization: Bearer <jwt>) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td () Tj
+0 -14 Td (GET /health) Tj
+0 -14 Td (Health check endpoint.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 200**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "ok": true }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (GET /bootstrap) Tj
+0 -14 Td (Returns complete bootstrap payload for frontend hydration.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 200**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({) Tj
+0 -14 Td (  "packages": [],) Tj
+0 -14 Td (  "pilgrims": [],) Tj
+0 -14 Td (  "passportDetails": [],) Tj
+0 -14 Td (  "payments": [],) Tj
+0 -14 Td (  "documents": [],) Tj
+0 -14 Td (  "leads": [],) Tj
+0 -14 Td (  "users": []) Tj
+0 -14 Td (}) Tj
+0 -14 Td (```) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 1686 >>
+stream
+BT
+/F1 10 Tf
+40 792 Td
+(> `users` in bootstrap response do not include password.) Tj
+0 -14 Td () Tj
+0 -14 Td (POST /auth/login) Tj
+0 -14 Td (Authenticates user by `email` and `password`, requires user status `Active`.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Request body**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "email": "admin@goodhope.com", "password": "admin123" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 200**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({) Tj
+0 -14 Td (  "token": "<jwt>",) Tj
+0 -14 Td (  "user": {) Tj
+0 -14 Td (    "id": "1",) Tj
+0 -14 Td (    "name": "Admin User",) Tj
+0 -14 Td (    "email": "admin@goodhope.com",) Tj
+0 -14 Td (    "role": "SuperAdmin",) Tj
+0 -14 Td (    "status": "Active") Tj
+0 -14 Td (  },) Tj
+0 -14 Td (  "permissions": ["pilgrims.add", "pilgrims.edit"]) Tj
+0 -14 Td (}) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 401**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "message": "Invalid credentials" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (Packages) Tj
+0 -14 Td () Tj
+0 -14 Td (POST /packages) Tj
+0 -14 Td (Creates a package.) Tj
+0 -14 Td () Tj
+0 -14 Td (Required fields:) Tj
+0 -14 Td (- `package_name`) Tj
+0 -14 Td (- `package_type`) Tj
+0 -14 Td (- `makkah_hotel`) Tj
+0 -14 Td (- `madinah_hotel`) Tj
+0 -14 Td () Tj
+0 -14 Td (`tags` defaults to `[]`.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 201**: Created package record.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 400**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "message": "Missing required package fields" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (PATCH /packages/:id) Tj
+0 -14 Td (Updates package by ID.) Tj
+0 -14 Td (- If `tags` omitted, existing tags are preserved.) Tj
+ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 9 0 R >>
+endobj
+9 0 obj
+<< /Length 1719 >>
+stream
+BT
+/F1 10 Tf
+40 792 Td
+() Tj
+0 -14 Td (**Response 200**: Updated package.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 404**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "message": "Package not found" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (DELETE /packages/:id) Tj
+0 -14 Td (Deletes package.) Tj
+0 -14 Td (- Blocked if package is referenced by any pilgrim.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 200**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "ok": true }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 400**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "message": "Cannot delete package assigned to pilgrims" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 404**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "message": "Package not found" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (Pilgrims) Tj
+0 -14 Td () Tj
+0 -14 Td (POST /pilgrims) Tj
+0 -14 Td (Creates pilgrim record.) Tj
+0 -14 Td (- Auto-generates:) Tj
+0 -14 Td (  - `id` with `p` prefix) Tj
+0 -14 Td (  - `registration_no` as `GH-YYYY-XXX`) Tj
+0 -14 Td (  - `created_at`) Tj
+0 -14 Td (  - `updated_at`) Tj
+0 -14 Td (- If `passport_number` provided, creates linked passport detail record.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 201**: Created pilgrim.) Tj
+0 -14 Td () Tj
+0 -14 Td (PATCH /pilgrims/:id) Tj
+0 -14 Td (Updates pilgrim by ID and refreshes `updated_at`.) Tj
+0 -14 Td (- If `passport_number` present:) Tj
+0 -14 Td (  - updates existing passport details, or) Tj
+0 -14 Td (  - creates new passport details if none exists.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 200**: Updated pilgrim.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 404**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "message": "Pilgrim not found" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 11 0 R >>
+endobj
+11 0 obj
+<< /Length 1407 >>
+stream
+BT
+/F1 10 Tf
+40 792 Td
+(DELETE /pilgrims/:id) Tj
+0 -14 Td (Deletes pilgrim and cascades related data:) Tj
+0 -14 Td (- `passportDetails`) Tj
+0 -14 Td (- `payments`) Tj
+0 -14 Td (- `documents`) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 200**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "ok": true }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 404**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "message": "Pilgrim not found" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td () Tj
+0 -14 Td (Leads) Tj
+0 -14 Td () Tj
+0 -14 Td (POST /leads) Tj
+0 -14 Td (Creates a new lead.) Tj
+0 -14 Td () Tj
+0 -14 Td (Required fields:) Tj
+0 -14 Td (- `full_name`) Tj
+0 -14 Td (- `mobile`) Tj
+0 -14 Td (- `source`) Tj
+0 -14 Td (- `interest`) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 201**: Created lead.) Tj
+0 -14 Td () Tj
+0 -14 Td (PATCH /leads/:id) Tj
+0 -14 Td (Updates lead record by ID.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 200**: Updated lead.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 404**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "message": "Lead not found" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (DELETE /leads/:id) Tj
+0 -14 Td (Deletes lead by ID.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 200**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "ok": true }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 404**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "message": "Lead not found" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+ET
+endstream
+endobj
+12 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 13 0 R >>
+endobj
+13 0 obj
+<< /Length 1460 >>
+stream
+BT
+/F1 10 Tf
+40 792 Td
+(Payments) Tj
+0 -14 Td () Tj
+0 -14 Td (POST /payments) Tj
+0 -14 Td (Creates payment record.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 201**: Created payment.) Tj
+0 -14 Td () Tj
+0 -14 Td (Documents) Tj
+0 -14 Td () Tj
+0 -14 Td (POST /documents) Tj
+0 -14 Td (Creates document record.) Tj
+0 -14 Td () Tj
+0 -14 Td (Required fields:) Tj
+0 -14 Td (- `pilgrim_id`) Tj
+0 -14 Td (- `name`) Tj
+0 -14 Td () Tj
+0 -14 Td (`doc_type` defaults to `Other`.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 201**: Created document.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 400**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "message": "Missing required document fields" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (DELETE /documents/:id) Tj
+0 -14 Td (Deletes document by ID.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 200**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "ok": true }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 404**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "message": "Document not found" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (Users) Tj
+0 -14 Td () Tj
+0 -14 Td (POST /users) Tj
+0 -14 Td (Creates user with defaults:) Tj
+0 -14 Td (- `password: "welcome123"`) Tj
+0 -14 Td (- `status: "Active"`) Tj
+0 -14 Td () Tj
+0 -14 Td (Required fields:) Tj
+0 -14 Td (- `name`) Tj
+0 -14 Td (- `email`) Tj
+0 -14 Td (- `role`) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 201**: Created user \(without password\).) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 400**) Tj
+ET
+endstream
+endobj
+14 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 15 0 R >>
+endobj
+15 0 obj
+<< /Length 1543 >>
+stream
+BT
+/F1 10 Tf
+40 792 Td
+(```json) Tj
+0 -14 Td ({ "message": "Missing required user fields" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 409**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "message": "Email already exists" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (PATCH /users/:id/status) Tj
+0 -14 Td (Toggles user status Active/Inactive.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 200**: Updated user \(without password\).) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 404**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "message": "User not found" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (PATCH /users/:id/password) Tj
+0 -14 Td (Updates user password.) Tj
+0 -14 Td (- Minimum length: 4) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 200**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "ok": true }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 400**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "message": "Password too short" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 404**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "message": "User not found" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (PATCH /users/:id) Tj
+0 -14 Td (Partially updates user profile fields.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 200**: Updated user \(without password\).) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 404**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "message": "User not found" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (DELETE /users/:id) Tj
+0 -14 Td (Deletes user by ID.) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 200**) Tj
+0 -14 Td (```json) Tj
+ET
+endstream
+endobj
+16 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 17 0 R >>
+endobj
+17 0 obj
+<< /Length 924 >>
+stream
+BT
+/F1 10 Tf
+40 792 Td
+({ "ok": true }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (**Response 404**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "message": "User not found" }) Tj
+0 -14 Td (```) Tj
+0 -14 Td () Tj
+0 -14 Td (Role Permission Matrix \(returned on login\)) Tj
+0 -14 Td () Tj
+0 -14 Td (- `SuperAdmin`:) Tj
+0 -14 Td (  - pilgrims.add, pilgrims.edit, pilgrims.delete, pilgrims.view) Tj
+0 -14 Td (  - accounts.view, accounts.add, accounts.edit, accounts.delete) Tj
+0 -14 Td (  - packages.manage, reports.download, users.manage) Tj
+0 -14 Td (- `Manager`:) Tj
+0 -14 Td (  - pilgrims.add, pilgrims.edit, pilgrims.view) Tj
+0 -14 Td (  - accounts.view, packages.manage, reports.download) Tj
+0 -14 Td (- `Accountant`:) Tj
+0 -14 Td (  - pilgrims.view) Tj
+0 -14 Td (  - accounts.view, accounts.add, accounts.edit) Tj
+0 -14 Td (  - reports.download) Tj
+0 -14 Td (- `DataEntry`:) Tj
+0 -14 Td (  - pilgrims.add, pilgrims.view) Tj
+ET
+endstream
+endobj
+xref
+0 18
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000155 00000 n 
+0000000225 00000 n 
+0000000351 00000 n 
+0000002305 00000 n 
+0000002431 00000 n 
+0000004169 00000 n 
+0000004295 00000 n 
+0000006066 00000 n 
+0000006194 00000 n 
+0000007654 00000 n 
+0000007782 00000 n 
+0000009295 00000 n 
+0000009423 00000 n 
+0000011019 00000 n 
+0000011147 00000 n 
+trailer
+<< /Size 18 /Root 1 0 R >>
+startxref
+12123
+%%EOF

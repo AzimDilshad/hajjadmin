@@ -22,15 +22,13 @@ const Login = () => {
     setError("");
     setLoading(true);
 
-    setTimeout(() => {
-      const success = login(email, password);
-      if (success) {
-        navigate("/dashboard");
-      } else {
-        setError("Invalid email or password");
-      }
-      setLoading(false);
-    }, 600);
+    const success = await login(email, password);
+    if (success) {
+      navigate("/dashboard");
+    } else {
+      setError("Invalid email or password");
+    }
+    setLoading(false);
   };
 
   return (

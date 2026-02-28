@@ -1,4 +1,5 @@
 import { useState, createContext, useContext, ReactNode } from "react";
+import { api } from "@/lib/api";
 
 interface AuthUser {
   id: string;
@@ -10,26 +11,12 @@ interface AuthUser {
 
 interface AuthContextType {
   user: AuthUser | null;
-  login: (email: string, password: string) => boolean;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   hasPermission: (permission: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
-
-const MOCK_USERS: (AuthUser & { password: string })[] = [
-  { id: "1", name: "Admin User", email: "admin@goodhope.com", password: "admin123", role: "SuperAdmin" },
-  { id: "2", name: "Manager", email: "manager@goodhope.com", password: "manager123", role: "Manager" },
-  { id: "3", name: "Accountant", email: "accounts@goodhope.com", password: "acc123", role: "Accountant" },
-  { id: "4", name: "Data Entry", email: "data@goodhope.com", password: "data123", role: "DataEntry" },
-];
-
-const ROLE_PERMISSIONS: Record<string, string[]> = {
-  SuperAdmin: ["pilgrims.add", "pilgrims.edit", "pilgrims.delete", "pilgrims.view", "accounts.view", "accounts.add", "accounts.edit", "accounts.delete", "packages.manage", "reports.download", "users.manage"],
-  Manager: ["pilgrims.add", "pilgrims.edit", "pilgrims.view", "accounts.view", "packages.manage", "reports.download"],
-  Accountant: ["pilgrims.view", "accounts.view", "accounts.add", "accounts.edit", "reports.download"],
-  DataEntry: ["pilgrims.add", "pilgrims.view"],
-};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(() => {
@@ -37,25 +24,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return saved ? JSON.parse(saved) : null;
   });
 
-  const login = (email: string, password: string): boolean => {
-    const found = MOCK_USERS.find(u => u.email === email && u.password === password);
-    if (found) {
-      const { password: _, ...userData } = found;
-      setUser(userData);
-      sessionStorage.setItem("auth_user", JSON.stringify(userData));
+  const [permissions, setPermissions] = useState<string[]>(() => {
+    const saved = sessionStorage.getItem("auth_permissions");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const result = await api.login(email, password);
+      setUser(result.user);
+      setPermissions(result.permissions);
+      sessionStorage.setItem("auth_user", JSON.stringify(result.user));
+      sessionStorage.setItem("auth_permissions", JSON.stringify(result.permissions));
+      sessionStorage.setItem("auth_token", result.token);
       return true;
+    } catch {
+      sessionStorage.removeItem("auth_token");
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
     setUser(null);
+    setPermissions([]);
     sessionStorage.removeItem("auth_user");
+    sessionStorage.removeItem("auth_permissions");
+    sessionStorage.removeItem("auth_token");
   };
 
   const hasPermission = (permission: string): boolean => {
     if (!user) return false;
-    return ROLE_PERMISSIONS[user.role]?.includes(permission) ?? false;
+    return permissions.includes(permission);
   };
 
   return (

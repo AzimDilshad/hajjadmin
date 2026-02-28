@@ -7,6 +7,7 @@ import {
   Plane,
   UserCog,
   Keyboard,
+  Target,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,6 +30,7 @@ const navItems = [
   { title: "Pilgrims", url: "/pilgrims", icon: Users, permission: "pilgrims.view" },
   { title: "Packages", url: "/packages", icon: Package, permission: null },
   { title: "Payments", url: "/payments", icon: CreditCard, permission: "accounts.view" },
+  { title: "Leads", url: "/leads", icon: Target, permission: null },
   { title: "Users", url: "/users", icon: UserCog, permission: "users.manage" },
 ];
 

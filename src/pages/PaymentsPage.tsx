@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
-import { PAYMENTS, PILGRIMS } from "@/data/mockData";
+import { useData } from "@/contexts/DataContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +13,7 @@ function formatCurrency(val: number) {
 }
 
 const PaymentsPage = () => {
+  const { payments: PAYMENTS, pilgrims: PILGRIMS } = useData();
   const [search, setSearch] = useState("");
   const [modeFilter, setModeFilter] = useState("all");
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ const PaymentsPage = () => {
         return matchesSearch && matchesMode;
       })
       .sort((a, b) => new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime());
-  }, [search, modeFilter]);
+  }, [search, modeFilter, PAYMENTS, PILGRIMS]);
 
   const totalAmount = allPayments.reduce((s, p) => s + p.amount, 0);
   const cashTotal = allPayments.filter((p) => p.payment_mode === "Cash").reduce((s, p) => s + p.amount, 0);

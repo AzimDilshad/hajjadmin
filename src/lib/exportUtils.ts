@@ -18,6 +18,14 @@ export function exportPilgrimProfilePDF(
   const balance = (pkg?.base_price || 0) - totalPaid;
 
   // Header
+  if (pilgrim.photo_data_url) {
+    try {
+      doc.addImage(pilgrim.photo_data_url, "JPEG", 160, 14, 32, 32);
+    } catch {
+      doc.addImage(pilgrim.photo_data_url, "PNG", 160, 14, 32, 32);
+    }
+  }
+
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
   doc.text("Goodhope Enterprises", 14, 20);
@@ -142,7 +150,8 @@ export function exportPilgrimProfilePDF(
     doc.text(`Goodhope Enterprises — Confidential | Page ${i} of ${pageCount}`, 14, 287);
   }
 
-  doc.save(`${pilgrim.registration_no}_Profile.pdf`);
+  const fileKey = passport?.passport_number || pilgrim.registration_no;
+  doc.save(`${fileKey}_Profile.pdf`);
 }
 
 export function exportPaymentStatementPDF(
@@ -262,7 +271,8 @@ export function exportPilgrimExcel(
   ws4["!cols"] = [{ wch: 14 }, { wch: 14 }, { wch: 16 }, { wch: 16 }, { wch: 30 }];
   XLSX.utils.book_append_sheet(wb, ws4, "Payments");
 
-  XLSX.writeFile(wb, `${pilgrim.registration_no}_Data.xlsx`);
+  const fileKey = passport?.passport_number || pilgrim.registration_no;
+  XLSX.writeFile(wb, `${fileKey}_Data.xlsx`);
 }
 
 export function exportAllPilgrimsExcel(pilgrims: Pilgrim[], packages: Package[], payments: Payment[]) {

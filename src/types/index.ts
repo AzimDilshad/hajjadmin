@@ -16,6 +16,7 @@ export interface Pilgrim {
   status: "Inquiry" | "Registered" | "Visa Process" | "Completed";
   created_at: string;
   updated_at: string;
+  photo_data_url?: string;
 }
 
 export interface PassportDetails {
@@ -35,6 +36,7 @@ export interface Package {
   madinah_hotel: string;
   total_days: number;
   base_price: number;
+  tags?: string[];
 }
 
 export interface Payment {
@@ -45,6 +47,37 @@ export interface Payment {
   payment_mode: "Cash" | "UPI" | "Bank Transfer";
   reference_no: string;
   notes?: string;
+}
+
+export type DocumentType = "Passport Copy" | "Aadhar Copy" | "Medical Certificate" | "Visa Copy" | "Ticket" | "Photo" | "Other";
+
+export interface DocumentRecord {
+  id: string;
+  pilgrim_id: string;
+  name: string;
+  size: string;
+  mime_type: string;
+  uploaded_at: string;
+  doc_type: DocumentType;
+  data_url?: string;
+}
+
+
+export interface Lead {
+  id: string;
+  full_name: string;
+  mobile: string;
+  email?: string;
+  city?: string;
+  source: "Walk-in" | "Website" | "Referral" | "Social Media" | "Call" | "Other";
+  interest: "Hajj" | "Umrah" | "Both" | "Not Sure";
+  budget?: string;
+  notes?: string;
+  status: "New" | "Contacted" | "Qualified" | "Converted" | "Closed";
+  assigned_to?: string;
+  follow_up_date?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface DashboardStats {

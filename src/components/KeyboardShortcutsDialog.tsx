@@ -7,6 +7,7 @@ const shortcuts = [
   { keys: ["Ctrl", "Shift", "P"], description: "Add New Pilgrim" },
   { keys: ["Ctrl", "Shift", "D"], description: "Go to Dashboard" },
   { keys: ["Ctrl", "Shift", "U"], description: "Go to Users" },
+  { keys: ["Ctrl", "Shift", "L"], description: "Go to Leads" },
   { keys: ["?"], description: "Show Keyboard Shortcuts" },
   { keys: ["Esc"], description: "Close any dialog" },
 ];

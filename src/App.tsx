@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { DataProvider } from "@/contexts/DataContext";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -12,6 +13,7 @@ import PilgrimProfile from "./pages/PilgrimProfile";
 import PackagesPage from "./pages/PackagesPage";
 import PaymentsPage from "./pages/PaymentsPage";
 import UsersPage from "./pages/UsersPage";
+import LeadsPage from "./pages/LeadsPage";
 import NotFound from "./pages/NotFound";
 import { ReactNode, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -39,6 +41,7 @@ function GlobalShortcuts() {
       if (!user) return;
       if (e.ctrlKey && e.shiftKey && e.key === "D") { e.preventDefault(); navigate("/dashboard"); }
       if (e.ctrlKey && e.shiftKey && e.key === "U") { e.preventDefault(); navigate("/users"); }
+      if (e.ctrlKey && e.shiftKey && e.key === "L") { e.preventDefault(); navigate("/leads"); }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
@@ -60,6 +63,7 @@ const AppRoutes = () => (
       <Route path="/packages" element={<ProtectedRoute><PackagesPage /></ProtectedRoute>} />
       <Route path="/payments" element={<ProtectedRoute><PaymentsPage /></ProtectedRoute>} />
       <Route path="/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
+      <Route path="/leads" element={<ProtectedRoute><LeadsPage /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   </>
@@ -72,7 +76,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
+          <DataProvider>
+            <AppRoutes />
+          </DataProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

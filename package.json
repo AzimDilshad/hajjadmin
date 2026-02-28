@@ -10,7 +10,10 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "server": "node backend/server.js",
+    "test:e2e": "node scripts/e2e-api.mjs",
+    "docs:api:pdf": "python scripts/generate-api-docs-pdf.py"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -65,7 +68,10 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",
     "xlsx": "^0.18.5",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.10.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",

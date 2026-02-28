@@ -18,14 +18,16 @@ import {
   LogOut,
   UserPlus,
   Keyboard,
+  Target,
 } from "lucide-react";
-import { PILGRIMS } from "@/data/mockData";
+import { useData } from "@/contexts/DataContext";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const { logout, hasPermission } = useAuth();
+  const { pilgrims: PILGRIMS } = useData();
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -70,6 +72,10 @@ export function CommandPalette() {
               Payments
             </CommandItem>
           )}
+          <CommandItem onSelect={() => go("/leads")}>
+            <Target className="mr-2 h-4 w-4" />
+            Leads
+          </CommandItem>
         </CommandGroup>
 
         <CommandSeparator />
@@ -93,6 +99,10 @@ export function CommandPalette() {
               Add New Pilgrim
             </CommandItem>
           )}
+          <CommandItem onSelect={() => go("/leads")}>
+            <Target className="mr-2 h-4 w-4" />
+            Manage Leads
+          </CommandItem>
           <CommandItem
             onSelect={() => {
               setOpen(false);
