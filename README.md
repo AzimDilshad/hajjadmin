@@ -170,6 +170,8 @@ npm run docs:api:pdf
 
 ### Default login accounts
 
+These users are auto-seeded on first backend start if missing.
+
 - `admin@goodhope.com / admin123`
 - `manager@goodhope.com / manager123`
 - `accounts@goodhope.com / acc123`

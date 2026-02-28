@@ -32,22 +32,32 @@ const collections = {
 
 const uid = (prefix) => `${prefix}${Date.now()}${Math.floor(Math.random() * 10000)}`;
 
-async function ensureDefaultAdmin() {
-  const exists = await collections.users.findOne({ email: "admin@goodhope.com" });
-  if (exists) return;
-  const passwordHash = await bcrypt.hash("admin123", 10);
-  await collections.users.insertOne({
-    id: uid("u"),
-    name: "Admin User",
-    email: "admin@goodhope.com",
-    passwordHash,
-    role: "SuperAdmin",
-    status: "Active",
-    lastLogin: null,
-  });
+async function ensureDefaultUsers() {
+  const defaults = [
+    { name: "Admin User", email: "admin@goodhope.com", password: "admin123", role: "SuperAdmin" },
+    { name: "Branch Manager", email: "manager@goodhope.com", password: "manager123", role: "Manager", branch: "Hyderabad" },
+    { name: "Accounts Head", email: "accounts@goodhope.com", password: "acc123", role: "Accountant" },
+    { name: "Data Entry Staff", email: "data@goodhope.com", password: "data123", role: "DataEntry", branch: "Bangalore" },
+  ];
+
+  for (const u of defaults) {
+    const exists = await collections.users.findOne({ email: u.email });
+    if (exists) continue;
+    const passwordHash = await bcrypt.hash(u.password, 10);
+    await collections.users.insertOne({
+      id: uid("u"),
+      name: u.name,
+      email: u.email,
+      passwordHash,
+      role: u.role,
+      branch: u.branch,
+      status: "Active",
+      lastLogin: null,
+    });
+  }
 }
 
-await ensureDefaultAdmin();
+await ensureDefaultUsers();
 
 function send(res, status, data) {
   res.writeHead(status, {
