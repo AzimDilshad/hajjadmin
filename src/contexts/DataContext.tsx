@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from "react";
 import { api } from "@/lib/api";
-import { DashboardStats, DocumentRecord, Lead, Package, PassportDetails, Payment, Pilgrim } from "@/types";
+import { DashboardStats, DocumentRecord, Expense, Lead, LeadConversionHistory, MedicalReport, Package, PassportDetails, Payment, Pilgrim, VaccineTemplate } from "@/types";
 
 export interface UserRecord {
   id: string;
@@ -19,6 +19,10 @@ interface DataContextType {
   payments: Payment[];
   documents: DocumentRecord[];
   leads: Lead[];
+  expenses: Expense[];
+  medicalReports: MedicalReport[];
+  vaccineTemplates: VaccineTemplate[];
+  leadConversions: LeadConversionHistory[];
   users: UserRecord[];
   loading: boolean;
   stats: DashboardStats;
@@ -29,9 +33,19 @@ interface DataContextType {
   deletePilgrim: (id: string) => Promise<void>;
   addPayment: (payload: Omit<Payment, "id">) => Promise<void>;
 
+  addExpense: (payload: Omit<Expense, "id">) => Promise<void>;
+  updateExpense: (id: string, payload: Partial<Expense>) => Promise<void>;
+  deleteExpense: (id: string) => Promise<void>;
+
   addLead: (payload: Omit<Lead, "id" | "created_at" | "updated_at">) => Promise<void>;
   updateLead: (id: string, payload: Partial<Lead>) => Promise<void>;
   deleteLead: (id: string) => Promise<void>;
+  convertLead: (id: string, packageId: string) => Promise<void>;
+
+  upsertMedicalReport: (pilgrimId: string, payload: Partial<MedicalReport>) => Promise<void>;
+  addVaccineTemplate: (payload: Omit<VaccineTemplate, "id">) => Promise<void>;
+  updateVaccineTemplate: (id: string, payload: Partial<VaccineTemplate>) => Promise<void>;
+  deleteVaccineTemplate: (id: string) => Promise<void>;
 
   addPackage: (payload: Omit<Package, "id">) => Promise<void>;
   updatePackage: (id: string, payload: Partial<Package>) => Promise<void>;
@@ -56,6 +70,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [documents, setDocuments] = useState<DocumentRecord[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [medicalReports, setMedicalReports] = useState<MedicalReport[]>([]);
+  const [vaccineTemplates, setVaccineTemplates] = useState<VaccineTemplate[]>([]);
+  const [leadConversions, setLeadConversions] = useState<LeadConversionHistory[]>([]);
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -70,14 +88,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setDocuments(data.documents || []);
       setUsers(data.users || []);
       setLeads(data.leads || []);
+      setExpenses(data.expenses || []);
+      setMedicalReports(data.medicalReports || []);
+      setVaccineTemplates(data.vaccineTemplates || []);
+      setLeadConversions(data.leadConversions || []);
     } catch {
-      setPackages([]);
-      setPilgrims([]);
-      setPassportDetails([]);
-      setPayments([]);
-      setDocuments([]);
-      setUsers([]);
-      setLeads([]);
+      setPackages([]); setPilgrims([]); setPassportDetails([]); setPayments([]); setDocuments([]); setUsers([]);
+      setLeads([]); setExpenses([]); setMedicalReports([]); setVaccineTemplates([]); setLeadConversions([]);
     } finally {
       setLoading(false);
     }
@@ -104,24 +121,25 @@ export function DataProvider({ children }: { children: ReactNode }) {
   return (
     <DataContext.Provider
       value={{
-        packages,
-        pilgrims,
-        passportDetails,
-        payments,
-        documents,
-        users,
-        leads,
-        loading,
-        stats,
-        refresh,
+        packages, pilgrims, passportDetails, payments, documents, leads, expenses, medicalReports, vaccineTemplates, leadConversions, users, loading, stats, refresh,
         addPilgrim: async (payload) => { await api.addPilgrim(payload); await refresh(); },
         updatePilgrim: async (id, payload) => { await api.updatePilgrim(id, payload); await refresh(); },
         deletePilgrim: async (id) => { await api.deletePilgrim(id); await refresh(); },
         addPayment: async (payload) => { await api.addPayment(payload); await refresh(); },
 
+        addExpense: async (payload) => { await api.addExpense(payload); await refresh(); },
+        updateExpense: async (id, payload) => { await api.updateExpense(id, payload); await refresh(); },
+        deleteExpense: async (id) => { await api.deleteExpense(id); await refresh(); },
+
         addLead: async (payload) => { await api.addLead(payload); await refresh(); },
         updateLead: async (id, payload) => { await api.updateLead(id, payload); await refresh(); },
         deleteLead: async (id) => { await api.deleteLead(id); await refresh(); },
+        convertLead: async (id, packageId) => { await api.convertLead(id, { package_id: packageId }); await refresh(); },
+
+        upsertMedicalReport: async (pilgrimId, payload) => { await api.upsertMedicalReport(pilgrimId, payload); await refresh(); },
+        addVaccineTemplate: async (payload) => { await api.addVaccineTemplate(payload); await refresh(); },
+        updateVaccineTemplate: async (id, payload) => { await api.updateVaccineTemplate(id, payload); await refresh(); },
+        deleteVaccineTemplate: async (id) => { await api.deleteVaccineTemplate(id); await refresh(); },
 
         addPackage: async (payload) => { await api.addPackage(payload); await refresh(); },
         updatePackage: async (id, payload) => { await api.updatePackage(id, payload); await refresh(); },

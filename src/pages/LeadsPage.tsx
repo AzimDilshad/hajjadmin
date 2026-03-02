@@ -7,35 +7,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, Plus, Pencil, Trash2 } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, Download, Repeat } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import type { Lead } from "@/types";
+import type { Lead, LeadStatus } from "@/types";
 
 const sources = ["Walk-in", "Website", "Referral", "Social Media", "Call", "Other"] as const;
 const interests = ["Hajj", "Umrah", "Both", "Not Sure"] as const;
-const statuses = ["New", "Contacted", "Qualified", "Converted", "Closed"] as const;
+const statuses: LeadStatus[] = ["New", "Contacted", "Follow-up Required", "Interested", "Negotiation", "Confirmed", "Converted to Pilgrim", "Not Interested", "Closed"];
 
-const emptyLead: Partial<Lead> = {
-  full_name: "",
-  mobile: "",
-  email: "",
-  city: "",
-  source: "Walk-in",
-  interest: "Not Sure",
-  budget: "",
-  notes: "",
-  status: "New",
-  assigned_to: "",
-  follow_up_date: "",
-};
+const emptyLead: Partial<Lead> = { full_name: "", mobile: "", email: "", city: "", source: "Walk-in", interest: "Not Sure", budget: "", notes: "", status: "New", assigned_to: "", follow_up_date: "", package_id: "" };
 
 export default function LeadsPage() {
-  const { leads, users, addLead, updateLead, deleteLead } = useData();
+  const { leads, users, packages, leadConversions, addLead, updateLead, deleteLead, convertLead } = useData();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Lead | null>(null);
   const [form, setForm] = useState<Partial<Lead>>({ ...emptyLead });
+  const [convertLeadId, setConvertLeadId] = useState("");
+  const [convertPackageId, setConvertPackageId] = useState("");
 
   const filtered = useMemo(() => leads.filter((l) => {
     const q = query.toLowerCase();
@@ -44,10 +34,25 @@ export default function LeadsPage() {
     return hit && statusOk;
   }), [leads, query, statusFilter]);
 
+  const conversionRate = leads.length ? Math.round((leadConversions.length / leads.length) * 100) : 0;
+
   const startAdd = () => { setEditing(null); setForm({ ...emptyLead }); setOpen(true); };
   const startEdit = (lead: Lead) => { setEditing(lead); setForm({ ...lead }); setOpen(true); };
-
   const set = (k: keyof Lead, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  const exportCsv = () => {
+    const rows = filtered.map((l) => [l.full_name, l.mobile, l.email || "", l.city || "", l.source, l.interest, l.status, l.follow_up_date || "", l.assigned_to || "", l.converted_pilgrim_id || ""]);
+    const csv = [["Name", "Mobile", "Email", "City", "Source", "Interest", "Status", "Follow-up", "Assigned", "Pilgrim ID"], ...rows]
+      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `leads_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const submit = async () => {
     if (!form.full_name?.trim() || !form.mobile?.trim()) {
@@ -66,19 +71,36 @@ export default function LeadsPage() {
     setEditing(null);
   };
 
+  const doConvert = async () => {
+    if (!convertLeadId || !convertPackageId) return;
+    await convertLead(convertLeadId, convertPackageId);
+    toast({ title: "Lead Converted", description: "Lead converted to pilgrim profile successfully." });
+    setConvertLeadId("");
+    setConvertPackageId("");
+  };
+
   return (
     <AppLayout>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
         <div>
           <h1 className="text-2xl font-bold font-heading">Leads</h1>
-          <p className="text-sm text-muted-foreground">Dynamic Lead Information Management for enquiry to conversion.</p>
+          <p className="text-sm text-muted-foreground">Dynamic Lead Information Management with conversion tracking.</p>
         </div>
-        <Button className="gap-2" onClick={startAdd}><Plus className="h-4 w-4" />Add Lead</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" className="gap-2" onClick={exportCsv}><Download className="h-4 w-4" />Export</Button>
+          <Button className="gap-2" onClick={startAdd}><Plus className="h-4 w-4" />Add Lead</Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+        <div className="bg-card border rounded-lg p-3"><p className="text-xs text-muted-foreground">Total Leads</p><p className="text-xl font-bold">{leads.length}</p></div>
+        <div className="bg-card border rounded-lg p-3"><p className="text-xs text-muted-foreground">Converted</p><p className="text-xl font-bold">{leadConversions.length}</p></div>
+        <div className="bg-card border rounded-lg p-3"><p className="text-xs text-muted-foreground">Conversion Rate</p><p className="text-xl font-bold">{conversionRate}%</p></div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input className="pl-9" placeholder="Search by name, mobile, city, email..." value={query} onChange={(e) => setQuery(e.target.value)} /></div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-full sm:w-52"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Status</SelectItem>{statuses.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>
+        <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-full sm:w-64"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Status</SelectItem>{statuses.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>
       </div>
 
       <div className="bg-card rounded-xl border overflow-hidden">
@@ -94,7 +116,7 @@ export default function LeadsPage() {
                   <td className="p-3">{lead.follow_up_date || "—"}</td>
                   <td className="p-3"><span className="text-xs px-2 py-1 rounded-full border bg-muted">{lead.status}</span></td>
                   <td className="p-3">{lead.assigned_to || "Unassigned"}</td>
-                  <td className="p-3"><div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => startEdit(lead)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={async () => { if (!window.confirm(`Delete ${lead.full_name}?`)) return; await deleteLead(lead.id); toast({ title: "Lead Deleted", description: `${lead.full_name} removed.` }); }}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div></td>
+                  <td className="p-3"><div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => startEdit(lead)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => { setConvertLeadId(lead.id); setConvertPackageId(lead.package_id || ""); }}><Repeat className="h-3.5 w-3.5 text-primary" /></Button><Button variant="ghost" size="sm" onClick={async () => { if (!window.confirm(`Delete ${lead.full_name}?`)) return; await deleteLead(lead.id); toast({ title: "Lead Deleted", description: `${lead.full_name} removed.` }); }}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div></td>
                 </tr>
               ))}
               {filtered.length === 0 && <tr><td colSpan={7} className="p-10 text-center text-muted-foreground">No leads found</td></tr>}
@@ -102,6 +124,19 @@ export default function LeadsPage() {
           </table>
         </div>
       </div>
+
+      {!!convertLeadId && (
+        <Dialog open={!!convertLeadId} onOpenChange={() => setConvertLeadId("") }>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Convert Lead to Pilgrim</DialogTitle></DialogHeader>
+            <div className="space-y-3">
+              <Label>Link Package</Label>
+              <Select value={convertPackageId} onValueChange={setConvertPackageId}><SelectTrigger><SelectValue placeholder="Select package" /></SelectTrigger><SelectContent>{packages.map((p) => <SelectItem key={p.id} value={p.id}>{p.package_name} — {p.package_type}</SelectItem>)}</SelectContent></Select>
+            </div>
+            <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setConvertLeadId("")}>Cancel</Button><Button onClick={doConvert}>Convert</Button></div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">

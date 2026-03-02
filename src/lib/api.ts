@@ -36,9 +36,20 @@ export const api = {
   deletePilgrim: (id: string) => request<any>(`/pilgrims/${id}`, { method: "DELETE" }),
   addPayment: (payload: any) => request<any>("/payments", { method: "POST", body: JSON.stringify(payload) }),
 
+  addExpense: (payload: any) => request<any>("/expenses", { method: "POST", body: JSON.stringify(payload) }),
+  updateExpense: (id: string, payload: any) => request<any>(`/expenses/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  deleteExpense: (id: string) => request<any>(`/expenses/${id}`, { method: "DELETE" }),
+
   addLead: (payload: any) => request<any>("/leads", { method: "POST", body: JSON.stringify(payload) }),
   updateLead: (id: string, payload: any) => request<any>(`/leads/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
   deleteLead: (id: string) => request<any>(`/leads/${id}`, { method: "DELETE" }),
+  convertLead: (id: string, payload: { package_id: string }) => request<any>(`/leads/${id}/convert`, { method: "POST", body: JSON.stringify(payload) }),
+
+  upsertMedicalReport: (pilgrimId: string, payload: any) => request<any>(`/medical-reports/${pilgrimId}`, { method: "PUT", body: JSON.stringify(payload) }),
+
+  addVaccineTemplate: (payload: any) => request<any>("/vaccine-templates", { method: "POST", body: JSON.stringify(payload) }),
+  updateVaccineTemplate: (id: string, payload: any) => request<any>(`/vaccine-templates/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  deleteVaccineTemplate: (id: string) => request<any>(`/vaccine-templates/${id}`, { method: "DELETE" }),
 
   addDocument: (payload: any) => request<any>("/documents", { method: "POST", body: JSON.stringify(payload) }),
   deleteDocument: (id: string) => request<any>(`/documents/${id}`, { method: "DELETE" }),

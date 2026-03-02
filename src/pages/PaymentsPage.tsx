@@ -1,161 +1,100 @@
-import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { useData } from "@/contexts/DataContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, IndianRupee, TrendingUp, CreditCard, Eye } from "lucide-react";
-import { motion } from "framer-motion";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, Trash2 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
-function formatCurrency(val: number) {
-  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(val);
-}
+export default function PaymentsPage() {
+  const { payments, pilgrims, expenses, packages, addExpense, deleteExpense } = useData();
+  const [open, setOpen] = useState(false);
+  const [expense, setExpense] = useState({ batch_id: "", title: "", amount: "", expense_date: new Date().toISOString().slice(0, 10), category: "Operations", notes: "" });
 
-const PaymentsPage = () => {
-  const { payments: PAYMENTS, pilgrims: PILGRIMS } = useData();
-  const [search, setSearch] = useState("");
-  const [modeFilter, setModeFilter] = useState("all");
-  const navigate = useNavigate();
+  const totalReceived = payments.reduce((s, p) => s + p.amount, 0);
+  const totalExpenses = expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
+  const net = totalReceived - totalExpenses;
 
-  const allPayments = useMemo(() => {
-    return PAYMENTS.map((p) => ({
-      ...p,
-      pilgrim: PILGRIMS.find((pl) => pl.id === p.pilgrim_id),
-    }))
-      .filter((p) => {
-        const matchesSearch =
-          !search ||
-          p.pilgrim?.full_name.toLowerCase().includes(search.toLowerCase()) ||
-          p.reference_no.toLowerCase().includes(search.toLowerCase()) ||
-          p.pilgrim?.registration_no.toLowerCase().includes(search.toLowerCase());
-        const matchesMode = modeFilter === "all" || p.payment_mode === modeFilter;
-        return matchesSearch && matchesMode;
-      })
-      .sort((a, b) => new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime());
-  }, [search, modeFilter, PAYMENTS, PILGRIMS]);
+  const byBatch = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const e of expenses) map[e.batch_id] = (map[e.batch_id] || 0) + Number(e.amount || 0);
+    return map;
+  }, [expenses]);
 
-  const totalAmount = allPayments.reduce((s, p) => s + p.amount, 0);
-  const cashTotal = allPayments.filter((p) => p.payment_mode === "Cash").reduce((s, p) => s + p.amount, 0);
-  const digitalTotal = allPayments.filter((p) => p.payment_mode !== "Cash").reduce((s, p) => s + p.amount, 0);
+  const saveExpense = async () => {
+    if (!expense.batch_id || !expense.title || !expense.amount) {
+      toast({ title: "Validation Error", description: "Batch, title and amount are required.", variant: "destructive" });
+      return;
+    }
+    await addExpense({ ...expense, amount: Number(expense.amount) } as any);
+    toast({ title: "Expense Added", description: `${expense.title} recorded.` });
+    setOpen(false);
+    setExpense({ batch_id: "", title: "", amount: "", expense_date: new Date().toISOString().slice(0, 10), category: "Operations", notes: "" });
+  };
 
   return (
     <AppLayout>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold font-heading">Payments</h1>
-        <p className="text-muted-foreground text-sm mt-1">{PAYMENTS.length} total transactions</p>
+      <div className="flex items-center justify-between mb-5">
+        <div><h1 className="text-2xl font-bold font-heading">Accounts</h1><p className="text-sm text-muted-foreground">Professional accounts dashboard with pilgrim receipts and batch expenses.</p></div>
+        <Button onClick={() => setOpen(true)} className="gap-2"><Plus className="h-4 w-4" />Add Other Expense</Button>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-xl border p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <IndianRupee className="h-4 w-4 text-primary" />
-            <p className="text-xs text-muted-foreground">Total Collected</p>
-          </div>
-          <p className="text-lg font-bold font-heading">{formatCurrency(totalAmount)}</p>
-        </motion.div>
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }} className="bg-card rounded-xl border p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <CreditCard className="h-4 w-4 text-secondary" />
-            <p className="text-xs text-muted-foreground">Digital Payments</p>
-          </div>
-          <p className="text-lg font-bold font-heading">{formatCurrency(digitalTotal)}</p>
-        </motion.div>
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="bg-card rounded-xl border p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <TrendingUp className="h-4 w-4 text-accent" />
-            <p className="text-xs text-muted-foreground">Cash Payments</p>
-          </div>
-          <p className="text-lg font-bold font-heading">{formatCurrency(cashTotal)}</p>
-        </motion.div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+        <div className="bg-card border rounded-lg p-4"><p className="text-xs text-muted-foreground">Total Received</p><p className="text-xl font-bold">₹{totalReceived.toLocaleString()}</p></div>
+        <div className="bg-card border rounded-lg p-4"><p className="text-xs text-muted-foreground">Total Expenses</p><p className="text-xl font-bold">₹{totalExpenses.toLocaleString()}</p></div>
+        <div className="bg-card border rounded-lg p-4"><p className="text-xs text-muted-foreground">Net Position</p><p className={`text-xl font-bold ${net >= 0 ? "text-success" : "text-destructive"}`}>₹{net.toLocaleString()}</p></div>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by pilgrim name, reg no, or reference…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <Select value={modeFilter} onValueChange={setModeFilter}>
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="Payment Mode" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Modes</SelectItem>
-            <SelectItem value="Cash">Cash</SelectItem>
-            <SelectItem value="UPI">UPI</SelectItem>
-            <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <Tabs defaultValue="payments">
+        <TabsList>
+          <TabsTrigger value="payments">Pilgrim Payments</TabsTrigger>
+          <TabsTrigger value="expenses">Other Expenses</TabsTrigger>
+          <TabsTrigger value="batch">Batch Expense Summary</TabsTrigger>
+        </TabsList>
 
-      {/* Table */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="bg-card rounded-xl border overflow-hidden"
-      >
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="text-left p-3 font-semibold text-muted-foreground">Date</th>
-                <th className="text-left p-3 font-semibold text-muted-foreground">Pilgrim</th>
-                <th className="text-left p-3 font-semibold text-muted-foreground">Amount</th>
-                <th className="text-left p-3 font-semibold text-muted-foreground hidden md:table-cell">Mode</th>
-                <th className="text-left p-3 font-semibold text-muted-foreground hidden md:table-cell">Reference</th>
-                <th className="text-left p-3 font-semibold text-muted-foreground hidden lg:table-cell">Notes</th>
-                <th className="text-left p-3 font-semibold text-muted-foreground">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {allPayments.map((payment) => (
-                <tr key={payment.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="p-3">{payment.payment_date}</td>
-                  <td className="p-3">
-                    <p className="font-medium">{payment.pilgrim?.full_name || "Unknown"}</p>
-                    <p className="text-xs text-muted-foreground">{payment.pilgrim?.registration_no}</p>
-                  </td>
-                  <td className="p-3 font-semibold">{formatCurrency(payment.amount)}</td>
-                  <td className="p-3 hidden md:table-cell">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-muted">
-                      {payment.payment_mode}
-                    </span>
-                  </td>
-                  <td className="p-3 font-mono text-xs hidden md:table-cell">{payment.reference_no}</td>
-                  <td className="p-3 text-muted-foreground hidden lg:table-cell">{payment.notes || "—"}</td>
-                  <td className="p-3">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => navigate(`/pilgrims/${payment.pilgrim_id}`)}
-                      className="gap-1.5"
-                    >
-                      <Eye className="h-3.5 w-3.5" />
-                      View
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-              {allPayments.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="p-8 text-center text-muted-foreground">
-                    No payments match your criteria
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </motion.div>
+        <TabsContent value="payments">
+          <div className="bg-card border rounded-xl overflow-x-auto">
+            <table className="w-full text-sm"><thead><tr className="bg-muted/40 border-b"><th className="text-left p-3">Pilgrim</th><th className="text-left p-3">Date</th><th className="text-left p-3">Amount</th><th className="text-left p-3">Mode</th><th className="text-left p-3">Ref</th></tr></thead><tbody>
+              {payments.map((p) => <tr key={p.id} className="border-b last:border-0"><td className="p-3">{pilgrims.find((x) => x.id === p.pilgrim_id)?.full_name || "—"}</td><td className="p-3">{p.payment_date}</td><td className="p-3">₹{p.amount.toLocaleString()}</td><td className="p-3">{p.payment_mode}</td><td className="p-3">{p.reference_no}</td></tr>)}
+            </tbody></table>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="expenses">
+          <div className="bg-card border rounded-xl overflow-x-auto">
+            <table className="w-full text-sm"><thead><tr className="bg-muted/40 border-b"><th className="text-left p-3">Batch</th><th className="text-left p-3">Title</th><th className="text-left p-3">Category</th><th className="text-left p-3">Date</th><th className="text-left p-3">Amount</th><th className="text-left p-3">Action</th></tr></thead><tbody>
+              {expenses.map((e) => <tr key={e.id} className="border-b last:border-0"><td className="p-3">{e.batch_id}</td><td className="p-3">{e.title}</td><td className="p-3">{e.category}</td><td className="p-3">{e.expense_date}</td><td className="p-3">₹{Number(e.amount).toLocaleString()}</td><td className="p-3"><Button variant="ghost" size="sm" onClick={async () => { await deleteExpense(e.id); toast({ title: "Expense Deleted" }); }}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></td></tr>)}
+            </tbody></table>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="batch">
+          <div className="bg-card border rounded-xl overflow-x-auto">
+            <table className="w-full text-sm"><thead><tr className="bg-muted/40 border-b"><th className="text-left p-3">Batch</th><th className="text-left p-3">Package</th><th className="text-left p-3">Expense</th></tr></thead><tbody>
+              {Object.entries(byBatch).map(([batchId, total]) => <tr key={batchId} className="border-b last:border-0"><td className="p-3">{batchId}</td><td className="p-3">{packages.find((p) => p.id === batchId)?.package_name || "Custom Batch"}</td><td className="p-3">₹{total.toLocaleString()}</td></tr>)}
+            </tbody></table>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Add Other Expense</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div><Label>Batch / Package</Label><Select value={expense.batch_id} onValueChange={(v) => setExpense((s) => ({ ...s, batch_id: v }))}><SelectTrigger><SelectValue placeholder="Select package" /></SelectTrigger><SelectContent>{packages.map((p) => <SelectItem key={p.id} value={p.id}>{p.package_name} — {p.package_type}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Title</Label><Input value={expense.title} onChange={(e) => setExpense((s) => ({ ...s, title: e.target.value }))} /></div>
+            <div className="grid grid-cols-2 gap-2"><div><Label>Amount</Label><Input type="number" value={expense.amount} onChange={(e) => setExpense((s) => ({ ...s, amount: e.target.value }))} /></div><div><Label>Date</Label><Input type="date" value={expense.expense_date} onChange={(e) => setExpense((s) => ({ ...s, expense_date: e.target.value }))} /></div></div>
+            <div><Label>Category</Label><Input value={expense.category} onChange={(e) => setExpense((s) => ({ ...s, category: e.target.value }))} /></div>
+            <div><Label>Notes</Label><Textarea rows={3} value={expense.notes} onChange={(e) => setExpense((s) => ({ ...s, notes: e.target.value }))} /></div>
+          </div>
+          <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={saveExpense}>Save Expense</Button></div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
-};
-
-export default PaymentsPage;
+}

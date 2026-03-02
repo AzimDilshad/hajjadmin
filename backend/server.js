@@ -27,10 +27,16 @@ const collections = {
   payments: db.collection("payments"),
   documents: db.collection("documents"),
   leads: db.collection("leads"),
+  expenses: db.collection("expenses"),
+  medicalReports: db.collection("medicalReports"),
+  vaccineTemplates: db.collection("vaccineTemplates"),
+  leadConversions: db.collection("leadConversions"),
   users: db.collection("users"),
 };
 
 const uid = (prefix) => `${prefix}${Date.now()}${Math.floor(Math.random() * 10000)}`;
+
+const LEAD_STATUSES = ["New", "Contacted", "Follow-up Required", "Interested", "Negotiation", "Confirmed", "Converted to Pilgrim", "Not Interested", "Closed"];
 
 async function ensureDefaultUsers() {
   const defaults = [
@@ -143,13 +149,17 @@ const server = http.createServer(async (req, res) => {
     if (auth.error) return send(res, auth.status, { message: auth.error });
 
     if (url === "/api/bootstrap" && method === "GET") {
-      const [packages, pilgrims, passportDetails, payments, documents, leads, users] = await Promise.all([
+      const [packages, pilgrims, passportDetails, payments, documents, leads, expenses, medicalReports, vaccineTemplates, leadConversions, users] = await Promise.all([
         collections.packages.find({}).toArray(),
         collections.pilgrims.find({}).toArray(),
         collections.passportDetails.find({}).toArray(),
         collections.payments.find({}).toArray(),
         collections.documents.find({}).toArray(),
         collections.leads.find({}).toArray(),
+        collections.expenses.find({}).toArray(),
+        collections.medicalReports.find({}).toArray(),
+        collections.vaccineTemplates.find({}).toArray(),
+        collections.leadConversions.find({}).toArray(),
         collections.users.find({}).toArray(),
       ]);
       return send(res, 200, {
@@ -159,6 +169,10 @@ const server = http.createServer(async (req, res) => {
         payments: payments.map(({ _id, ...x }) => x),
         documents: documents.map(({ _id, ...x }) => x),
         leads: leads.map(({ _id, ...x }) => x),
+        expenses: expenses.map(({ _id, ...x }) => x),
+        medicalReports: medicalReports.map(({ _id, ...x }) => x),
+        vaccineTemplates: vaccineTemplates.map(({ _id, ...x }) => x),
+        leadConversions: leadConversions.map(({ _id, ...x }) => x),
         users: users.map(sanitizeUser),
       });
     }
@@ -236,7 +250,7 @@ const server = http.createServer(async (req, res) => {
       const now = new Date().toISOString().slice(0, 10);
       const record = {
         id: uid("ld"),
-        status: body.status || "New",
+        status: LEAD_STATUSES.includes(body.status) ? body.status : "New",
         full_name: body.full_name,
         mobile: body.mobile,
         email: body.email || "",
@@ -259,7 +273,7 @@ const server = http.createServer(async (req, res) => {
       const body = await parseBody(req);
       const lead = await collections.leads.findOne({ id });
       if (!lead) return send(res, 404, { message: "Lead not found" });
-      const updated = { ...lead, ...body, updated_at: new Date().toISOString().slice(0, 10) };
+      const updated = { ...lead, ...body, status: body.status && LEAD_STATUSES.includes(body.status) ? body.status : lead.status, updated_at: new Date().toISOString().slice(0, 10) };
       await collections.leads.updateOne({ id }, { $set: updated });
       return send(res, 200, { ...updated, _id: undefined });
     }
@@ -271,11 +285,115 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true });
     }
 
+    if (url?.startsWith("/api/leads/") && url?.endsWith("/convert") && method === "POST") {
+      const id = url.split("/")[3];
+      const body = await parseBody(req);
+      const lead = await collections.leads.findOne({ id });
+      if (!lead) return send(res, 404, { message: "Lead not found" });
+      if (!body.package_id) return send(res, 400, { message: "package_id is required" });
+
+      const pilgrim = {
+        id: uid("p"),
+        registration_no: `GH-${new Date().getFullYear()}-${String((await collections.pilgrims.countDocuments()) + 1).padStart(3, "0")}`,
+        full_name: lead.full_name,
+        passport_name: lead.full_name.toUpperCase(),
+        gender: "Male",
+        date_of_birth: "",
+        mobile: lead.mobile,
+        email: lead.email || "",
+        address: lead.city || "",
+        blood_group: "",
+        package_id: body.package_id,
+        departure_city: lead.city || "",
+        room_type: "Double",
+        status: "Registered",
+        created_at: new Date().toISOString().slice(0, 10),
+        updated_at: new Date().toISOString().slice(0, 10),
+      };
+
+      await collections.pilgrims.insertOne(pilgrim);
+      await collections.leads.updateOne({ id }, { $set: { status: "Converted to Pilgrim", converted_pilgrim_id: pilgrim.id, package_id: body.package_id, updated_at: new Date().toISOString().slice(0, 10) } });
+      const conversion = { id: uid("lch"), lead_id: id, pilgrim_id: pilgrim.id, package_id: body.package_id, converted_at: new Date().toISOString() };
+      await collections.leadConversions.insertOne(conversion);
+
+      return send(res, 201, { ok: true, pilgrim, conversion });
+    }
+
     if (url === "/api/payments" && method === "POST") {
       const body = await parseBody(req);
       const record = { id: uid("pay"), ...body };
       await collections.payments.insertOne(record);
       return send(res, 201, record);
+    }
+
+    if (url === "/api/expenses" && method === "POST") {
+      const body = await parseBody(req);
+      if (!body.batch_id || !body.title || body.amount == null) return send(res, 400, { message: "Missing required expense fields" });
+      const record = { id: uid("exp"), expense_date: body.expense_date || new Date().toISOString().slice(0, 10), category: body.category || "Other", ...body };
+      await collections.expenses.insertOne(record);
+      return send(res, 201, record);
+    }
+
+    if (url?.startsWith("/api/expenses/") && method === "PATCH") {
+      const id = url.split("/")[3];
+      const body = await parseBody(req);
+      const expense = await collections.expenses.findOne({ id });
+      if (!expense) return send(res, 404, { message: "Expense not found" });
+      const updated = { ...expense, ...body };
+      await collections.expenses.updateOne({ id }, { $set: updated });
+      return send(res, 200, { ...updated, _id: undefined });
+    }
+
+    if (url?.startsWith("/api/expenses/") && method === "DELETE") {
+      const id = url.split("/")[3];
+      const result = await collections.expenses.deleteOne({ id });
+      if (!result.deletedCount) return send(res, 404, { message: "Expense not found" });
+      return send(res, 200, { ok: true });
+    }
+
+    if (url?.startsWith("/api/medical-reports/") && method === "PUT") {
+      const pilgrimId = url.split("/")[3];
+      const body = await parseBody(req);
+      const current = await collections.medicalReports.findOne({ pilgrim_id: pilgrimId });
+      const height = Number(body.height_cm || current?.height_cm || 0);
+      const weight = Number(body.weight_kg || current?.weight_kg || 0);
+      const bmi = height > 0 ? Number((weight / ((height / 100) ** 2)).toFixed(1)) : undefined;
+      const next = {
+        id: current?.id || uid("med"),
+        pilgrim_id: pilgrimId,
+        created_at: current?.created_at || new Date().toISOString().slice(0, 10),
+        updated_at: new Date().toISOString().slice(0, 10),
+        ...current,
+        ...body,
+        bmi,
+      };
+      await collections.medicalReports.updateOne({ pilgrim_id: pilgrimId }, { $set: next }, { upsert: true });
+      return send(res, 200, next);
+    }
+
+    if (url === "/api/vaccine-templates" && method === "POST") {
+      const body = await parseBody(req);
+      if (!body.name) return send(res, 400, { message: "name is required" });
+      const record = { id: uid("vac"), name: body.name, mandatory: !!body.mandatory, enabled: body.enabled !== false };
+      await collections.vaccineTemplates.insertOne(record);
+      return send(res, 201, record);
+    }
+
+    if (url?.startsWith("/api/vaccine-templates/") && method === "PATCH") {
+      const id = url.split("/")[3];
+      const body = await parseBody(req);
+      const row = await collections.vaccineTemplates.findOne({ id });
+      if (!row) return send(res, 404, { message: "Vaccine template not found" });
+      const updated = { ...row, ...body };
+      await collections.vaccineTemplates.updateOne({ id }, { $set: updated });
+      return send(res, 200, { ...updated, _id: undefined });
+    }
+
+    if (url?.startsWith("/api/vaccine-templates/") && method === "DELETE") {
+      const id = url.split("/")[3];
+      const result = await collections.vaccineTemplates.deleteOne({ id });
+      if (!result.deletedCount) return send(res, 404, { message: "Vaccine template not found" });
+      return send(res, 200, { ok: true });
     }
 
     if (url === "/api/documents" && method === "POST") {
