@@ -8,6 +8,10 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    allowedHosts: [
+      "admin.flygoodhope.com",
+      "localhost"
+    ],
     hmr: {
       overlay: false,
     },

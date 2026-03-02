@@ -4,8 +4,9 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 const PORT = Number(process.env.PORT || 4000);
-const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017";
-const MONGO_DB_NAME = process.env.MONGO_DB_NAME || "hajjumrah_wayfinder";
+// .trim() removes the %20 (space) that is causing your crash
+const MONGO_URI = (process.env.MONGO_URI || "mongodb://127.0.0.1:27017").trim();
+const MONGO_DB_NAME = (process.env.MONGO_DB_NAME || "hajjumrah_wayfinder").trim();
 const JWT_SECRET = process.env.JWT_SECRET || "change-me-in-production";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "8h";
 
@@ -469,7 +470,24 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`Backend running on http://localhost:${PORT}`);
-  console.log(`MongoDB database: ${MONGO_DB_NAME}`);
-});
+// --- NEW STARTUP LOGIC ---
+async function startServer() {
+  try {
+    console.log("Connecting to MongoDB...");
+    await client.connect();
+    console.log("✅ MongoDB Connected Successfully.");
+
+    await ensureDefaultUsers();
+    console.log("✅ Default users checked/created.");
+
+    server.listen(PORT, () => {
+      console.log(`🚀 Backend running on http://localhost:${PORT}`);
+      console.log(`📁 Database: ${MONGO_DB_NAME}`);
+    });
+  } catch (err) {
+    console.error("❌ Failed to start server:", err);
+    process.exit(1);
+  }
+}
+
+startServer();
