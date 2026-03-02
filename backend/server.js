@@ -81,7 +81,7 @@ function parseBody(req) {
 }
 
 function sanitizeUser(u) {
-  const { _id, passwordHash, ...safe } = u;
+  const { _id, passwordHash, password, ...safe } = u;
   return safe;
 }
 
@@ -114,8 +114,24 @@ const server = http.createServer(async (req, res) => {
       const body = await parseBody(req);
       const user = await collections.users.findOne({ email: body.email, status: "Active" });
       if (!user) return send(res, 401, { message: "Invalid credentials" });
-      const ok = await bcrypt.compare(String(body.password || ""), user.passwordHash || "");
+
+      const inputPassword = String(body.password || "");
+      let ok = false;
+
+      if (user.passwordHash) {
+        ok = await bcrypt.compare(inputPassword, user.passwordHash);
+      } else if (user.password) {
+        ok = inputPassword === String(user.password);
+        if (ok) {
+          const passwordHash = await bcrypt.hash(inputPassword, 10);
+          await collections.users.updateOne({ id: user.id }, { $set: { passwordHash }, $unset: { password: "" } });
+          user.passwordHash = passwordHash;
+          delete user.password;
+        }
+      }
+
       if (!ok) return send(res, 401, { message: "Invalid credentials" });
+
       const lastLogin = new Date().toISOString().slice(0, 10);
       await collections.users.updateOne({ id: user.id }, { $set: { lastLogin } });
       const safeUser = sanitizeUser({ ...user, lastLogin });

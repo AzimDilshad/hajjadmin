@@ -172,6 +172,11 @@ npm run docs:api:pdf
 
 These users are auto-seeded on first backend start if missing.
 
+
+> If you add users manually in MongoDB Compass, login works with either:
+> - `passwordHash` (bcrypt hash), or
+> - temporary plain `password` field (auto-migrated to `passwordHash` on first successful login).
+
 - `admin@goodhope.com / admin123`
 - `manager@goodhope.com / manager123`
 - `accounts@goodhope.com / acc123`

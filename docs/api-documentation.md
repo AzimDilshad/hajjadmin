@@ -10,6 +10,7 @@ All responses are JSON and include permissive CORS headers.
 - Content type: `application/json`
 - Auth: JWT bearer token for all endpoints except `/health` and `/auth/login`
 - Password storage: bcrypt hashes (`passwordHash`)
+- Compatibility: manual MongoDB Compass users with plain `password` are accepted once and auto-migrated to `passwordHash` on successful login
 - CORS:
   - `Access-Control-Allow-Origin: *`
   - `Access-Control-Allow-Methods: GET,POST,PATCH,DELETE,OPTIONS`

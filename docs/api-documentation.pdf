@@ -12,7 +12,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
 endobj
 5 0 obj
-<< /Length 1902 >>
+<< /Length 2040 >>
 stream
 BT
 /F1 10 Tf
@@ -29,6 +29,8 @@ BT
 0 -14 Td (- Content type: `application/json`) Tj
 0 -14 Td (- Auth: JWT bearer token for all endpoints except `/health` and `/auth/login`) Tj
 0 -14 Td (- Password storage: bcrypt hashes \(`passwordHash`\)) Tj
+0 -14 Td (- Compatibility: manual MongoDB Compass users with plain `password` are accepted once and) Tj
+0 -14 Td (  auto-migrated to `passwordHash` on successful login) Tj
 0 -14 Td (- CORS:) Tj
 0 -14 Td (  - `Access-Control-Allow-Origin: *`) Tj
 0 -14 Td (  - `Access-Control-Allow-Methods: GET,POST,PATCH,DELETE,OPTIONS`) Tj
@@ -68,8 +70,6 @@ BT
 0 -14 Td (  "documents": [],) Tj
 0 -14 Td (  "leads": [],) Tj
 0 -14 Td (  "users": []) Tj
-0 -14 Td (}) Tj
-0 -14 Td (```) Tj
 ET
 endstream
 endobj
@@ -77,12 +77,14 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 7 0 R >>
 endobj
 7 0 obj
-<< /Length 1686 >>
+<< /Length 1619 >>
 stream
 BT
 /F1 10 Tf
 40 792 Td
-(> `users` in bootstrap response do not include password.) Tj
+(}) Tj
+0 -14 Td (```) Tj
+0 -14 Td (> `users` in bootstrap response do not include password.) Tj
 0 -14 Td () Tj
 0 -14 Td (POST /auth/login) Tj
 0 -14 Td (Authenticates user by `email` and `password`, requires user status `Active`.) Tj
@@ -133,8 +135,6 @@ BT
 0 -14 Td (```) Tj
 0 -14 Td () Tj
 0 -14 Td (PATCH /packages/:id) Tj
-0 -14 Td (Updates package by ID.) Tj
-0 -14 Td (- If `tags` omitted, existing tags are preserved.) Tj
 ET
 endstream
 endobj
@@ -142,12 +142,14 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 9 0 R >>
 endobj
 9 0 obj
-<< /Length 1719 >>
+<< /Length 1787 >>
 stream
 BT
 /F1 10 Tf
 40 792 Td
-() Tj
+(Updates package by ID.) Tj
+0 -14 Td (- If `tags` omitted, existing tags are preserved.) Tj
+0 -14 Td () Tj
 0 -14 Td (**Response 200**: Updated package.) Tj
 0 -14 Td () Tj
 0 -14 Td (**Response 404**) Tj
@@ -198,8 +200,6 @@ BT
 0 -14 Td (**Response 404**) Tj
 0 -14 Td (```json) Tj
 0 -14 Td ({ "message": "Pilgrim not found" }) Tj
-0 -14 Td (```) Tj
-0 -14 Td () Tj
 ET
 endstream
 endobj
@@ -212,7 +212,9 @@ stream
 BT
 /F1 10 Tf
 40 792 Td
-(DELETE /pilgrims/:id) Tj
+(```) Tj
+0 -14 Td () Tj
+0 -14 Td (DELETE /pilgrims/:id) Tj
 0 -14 Td (Deletes pilgrim and cascades related data:) Tj
 0 -14 Td (- `passportDetails`) Tj
 0 -14 Td (- `payments`) Tj
@@ -263,8 +265,6 @@ BT
 0 -14 Td (**Response 404**) Tj
 0 -14 Td (```json) Tj
 0 -14 Td ({ "message": "Lead not found" }) Tj
-0 -14 Td (```) Tj
-0 -14 Td () Tj
 ET
 endstream
 endobj
@@ -272,12 +272,14 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 13 0 R >>
 endobj
 13 0 obj
-<< /Length 1460 >>
+<< /Length 1447 >>
 stream
 BT
 /F1 10 Tf
 40 792 Td
-(Payments) Tj
+(```) Tj
+0 -14 Td () Tj
+0 -14 Td (Payments) Tj
 0 -14 Td () Tj
 0 -14 Td (POST /payments) Tj
 0 -14 Td (Creates payment record.) Tj
@@ -328,8 +330,6 @@ BT
 0 -14 Td (- `role`) Tj
 0 -14 Td () Tj
 0 -14 Td (**Response 201**: Created user \(without password\).) Tj
-0 -14 Td () Tj
-0 -14 Td (**Response 400**) Tj
 ET
 endstream
 endobj
@@ -337,12 +337,14 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 15 0 R >>
 endobj
 15 0 obj
-<< /Length 1543 >>
+<< /Length 1536 >>
 stream
 BT
 /F1 10 Tf
 40 792 Td
-(```json) Tj
+() Tj
+0 -14 Td (**Response 400**) Tj
+0 -14 Td (```json) Tj
 0 -14 Td ({ "message": "Missing required user fields" }) Tj
 0 -14 Td (```) Tj
 0 -14 Td () Tj
@@ -393,8 +395,6 @@ BT
 0 -14 Td (DELETE /users/:id) Tj
 0 -14 Td (Deletes user by ID.) Tj
 0 -14 Td () Tj
-0 -14 Td (**Response 200**) Tj
-0 -14 Td (```json) Tj
 ET
 endstream
 endobj
@@ -402,12 +402,14 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 17 0 R >>
 endobj
 17 0 obj
-<< /Length 924 >>
+<< /Length 977 >>
 stream
 BT
 /F1 10 Tf
 40 792 Td
-({ "ok": true }) Tj
+(**Response 200**) Tj
+0 -14 Td (```json) Tj
+0 -14 Td ({ "ok": true }) Tj
 0 -14 Td (```) Tj
 0 -14 Td () Tj
 0 -14 Td (**Response 404**) Tj
@@ -441,20 +443,20 @@ xref
 0000000155 00000 n 
 0000000225 00000 n 
 0000000351 00000 n 
-0000002305 00000 n 
-0000002431 00000 n 
-0000004169 00000 n 
-0000004295 00000 n 
-0000006066 00000 n 
-0000006194 00000 n 
-0000007654 00000 n 
-0000007782 00000 n 
-0000009295 00000 n 
-0000009423 00000 n 
-0000011019 00000 n 
-0000011147 00000 n 
+0000002443 00000 n 
+0000002569 00000 n 
+0000004240 00000 n 
+0000004366 00000 n 
+0000006205 00000 n 
+0000006333 00000 n 
+0000007793 00000 n 
+0000007921 00000 n 
+0000009421 00000 n 
+0000009549 00000 n 
+0000011138 00000 n 
+0000011266 00000 n 
 trailer
 << /Size 18 /Root 1 0 R >>
 startxref
-12123
+12295
 %%EOF
