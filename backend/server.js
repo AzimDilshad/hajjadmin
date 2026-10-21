@@ -41,10 +41,10 @@ const LEAD_STATUSES = ["New", "Contacted", "Follow-up Required", "Interested", "
 
 async function ensureDefaultUsers() {
   const defaults = [
-    { name: "Admin User", email: "admin@goodhope.com", password: "admin123", role: "SuperAdmin" },
-    { name: "Branch Manager", email: "manager@goodhope.com", password: "manager123", role: "Manager", branch: "Hyderabad" },
-    { name: "Accounts Head", email: "accounts@goodhope.com", password: "acc123", role: "Accountant" },
-    { name: "Data Entry Staff", email: "data@goodhope.com", password: "data123", role: "DataEntry", branch: "Bangalore" },
+    { name: "Admin User", email: "admin@abdcs.com", password: "admin123", role: "SuperAdmin" },
+    { name: "Branch Manager", email: "manager@sssse.com", password: "manager123", role: "Manager", branch: "Hyderabad" },
+    { name: "Accounts Head", email: "accounts@gssspe.com", password: "acc123", role: "Accountant" },
+    { name: "Data Entry Staff", email: "data@goossspe.com", password: "data123", role: "DataEntry", branch: "Bangalore" },
   ];
 
   for (const u of defaults) {
